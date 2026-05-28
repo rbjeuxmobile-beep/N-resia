@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Néresia">
+<title>NÉRESIA — Volcain</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --magma: #ff2200;
+  --magma2: #ff6600;
+  --magma3: #ffaa00;
+  --ember: #ff4400;
+  --deep: #0a0000;
+  --dark: #110000;
+  --mid: #1a0500;
+  --surface: #200800;
+  --surface2: #2d0a00;
+  --text: #ffddcc;
+  --text2: #ff9966;
+  --text3: #cc4422;
+  --glow: rgba(255,68,0,0.4);
+  --smoke: rgba(80,40,20,0.6);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  background:var(--deep);
+  font-family:'Rajdhani', sans-serif;
+  color:var(--text);
+  user-select:none;
+}
+
+/* ====== SPLASH SCREEN ====== */
+#splash {
+  position:fixed; inset:0; z-index:9999;
+  background:var(--deep);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  transition:opacity 1s ease;
+}
+#splash.hide { opacity:0; pointer-events:none; }
+
+.splash-volcano {
+  width:200px; height:200px;
+  position:relative;
+  margin-bottom:30px;
+}
+.splash-volcano svg { width:100%; height:100%; }
+
+.splash-title {
+  font-family:'Cinzel', serif;
+  font-size:3rem;
+  font-weight:900;
+  color:var(--magma2);
+  text-shadow:0 0 40px var(--magma), 0 0 80px rgba(255,100,0,0.5);
+  letter-spacing:0.3em;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+.splash-sub {
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.8rem;
+  color:var(--text3);
+  letter-spacing:0.4em;
+  margin-top:8px;
+  text-transform:uppercase;
+}
+.splash-bar {
+  width:200px; height:2px;
+  background:var(--surface2);
+  margin-top:40px;
+  border-radius:2px;
+  overflow:hidden;
+}
+.splash-bar-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--magma), var(--magma3));
+  width:0%;
+  animation: loadBar 2.5s ease forwards;
+  box-shadow:0 0 10px var(--magma);
+}
+.splash-status {
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.65rem;
+  color:var(--text3);
+  margin-top:10px;
+  letter-spacing:0.15em;
+}
+
+@keyframes loadBar { to { width:100%; } }
+@keyframes pulseGlow {
+  0%,100% { text-shadow:0 0 40px var(--magma), 0 0 80px rgba(255,100,0,0.5); }
+  50% { text-shadow:0 0 60px var(--magma), 0 0 120px rgba(255,100,0,0.8), 0 0 200px rgba(255,50,0,0.3); }
+}
+
+/* ====== PARTICLES ====== */
+#particles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+.ember-p {
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--magma3), var(--magma));
+  animation: floatEmber linear infinite;
+  box-shadow:0 0 6px var(--magma2);
+}
+.smoke-p {
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(60,30,10,0.4), transparent);
+  animation: floatSmoke linear infinite;
+}
+.lightning-p {
+  position:absolute;
+  width:1px;
+  background:linear-gradient(to bottom, transparent, #ffddaa, transparent);
+  animation: lightning linear infinite;
+  opacity:0;
+}
+@keyframes floatEmber {
+  0% { transform:translateY(100vh) translateX(0) scale(1); opacity:1; }
+  100% { transform:translateY(-20px) translateX(var(--dx)) scale(0.3); opacity:0; }
+}
+@keyframes floatSmoke {
+  0% { transform:translateY(80vh) scale(0.5); opacity:0.6; }
+  100% { transform:translateY(-100px) scale(3); opacity:0; }
+}
+@keyframes lightning {
+  0%,90%,100% { opacity:0; }
+  92%,96% { opacity:1; }
+}
+
+/* ====== LAVA BACKGROUND ====== */
+#lava-bg {
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 100%, rgba(200,50,0,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 100%, rgba(180,80,0,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 40% at 50% 100%, rgba(255,30,0,0.08) 0%, transparent 50%),
+    var(--deep);
+}
+#lava-flow {
+  position:absolute; bottom:0; left:0; right:0;
+  height:80px;
+  background:linear-gradient(to top, rgba(255,60,0,0.15), transparent);
+  animation: lavaFlow 4s ease-in-out infinite alternate;
+}
+@keyframes lavaFlow {
+  0% { opacity:0.5; transform:scaleX(1); }
+  100% { opacity:1; transform:scaleX(1.02); }
+}
+
+/* ====== APP SHELL ====== */
+#app {
+  position:fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  opacity:0; transition:opacity 0.8s ease;
+}
+#app.visible { opacity:1; }
+
+/* ====== HEADER ====== */
+#header {
+  height:60px;
+  background:linear-gradient(to bottom, rgba(10,0,0,0.98), rgba(15,3,0,0.9));
+  border-bottom:1px solid rgba(255,80,0,0.3);
+  display:flex; align-items:center;
+  padding:0 16px;
+  gap:12px;
+  position:relative;
+  flex-shrink:0;
+  box-shadow:0 4px 30px rgba(255,40,0,0.2);
+}
+#header::after {
+  content:'';
+  position:absolute; bottom:-1px; left:0; right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--magma), var(--magma2), var(--magma), transparent);
+  animation: scanLine 3s linear infinite;
+}
+@keyframes scanLine {
+  0% { opacity:0.3; } 50% { opacity:1; } 100% { opacity:0.3; }
+}
+
+.logo {
+  font-family:'Cinzel', serif;
+  font-size:1.4rem;
+  font-weight:900;
+  color:var(--magma2);
+  text-shadow:0 0 20px var(--magma);
+  letter-spacing:0.15em;
+  flex-shrink:0;
+}
+.logo span { color:var(--magma3); font-size:0.7em; }
+
+.header-status {
+  flex:1;
+  display:flex; align-items:center; gap:8px;
+  overflow:hidden;
+}
+.alert-ticker {
+  flex:1;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.62rem;
+  color:var(--magma);
+  overflow:hidden;
+  white-space:nowrap;
+}
+.ticker-inner {
+  display:inline-block;
+  animation: ticker 25s linear infinite;
+}
+@keyframes ticker { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
+
+.status-dot {
+  width:8px; height:8px;
+  border-radius:50%;
+  background:var(--magma);
+  box-shadow:0 0 8px var(--magma);
+  animation:blink 1s ease infinite;
+  flex-shrink:0;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.header-temp {
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.75rem;
+  color:var(--magma3);
+  background:rgba(255,80,0,0.1);
+  border:1px solid rgba(255,80,0,0.3);
+  padding:4px 8px;
+  border-radius:4px;
+  flex-shrink:0;
+}
+
+/* ====== CONTENT AREA ====== */
+#content {
+  flex:1;
+  overflow:hidden;
+  position:relative;
+}
+
+.tab-panel {
+  position:absolute; inset:0;
+  overflow-y:auto;
+  padding:16px;
+  display:none;
+  scrollbar-width:thin;
+  scrollbar-color:var(--magma) var(--dark);
+}
+.tab-panel.active { display:block; }
+.tab-panel::-webkit-scrollbar { width:3px; }
+.tab-panel::-webkit-scrollbar-track { background:var(--dark); }
+.tab-panel::-webkit-scrollbar-thumb { background:var(--magma); border-radius:2px; }
+
+/* ====== BOTTOM NAV ====== */
+#nav {
+  height:68px;
+  background:linear-gradient(to top, rgba(5,0,0,0.99), rgba(15,3,0,0.95));
+  border-top:1px solid rgba(255,60,0,0.25);
+  display:flex; align-items:stretch;
+  flex-shrink:0;
+  box-shadow:0 -4px 30px rgba(255,30,0,0.15);
+  position:relative;
+  z-index:50;
+}
+#nav::before {
+  content:'';
+  position:absolute; top:-1px; left:0; right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--magma3), transparent);
+}
+
+.nav-btn {
+  flex:1;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:3px;
+  background:none; border:none;
+  cursor:pointer;
+  color:var(--text3);
+  padding:8px 2px;
+  transition:all 0.2s;
+  position:relative;
+  font-family:'Rajdhani', sans-serif;
+}
+.nav-btn:active { transform:scale(0.92); }
+.nav-btn.active {
+  color:var(--magma2);
+}
+.nav-btn.active::before {
+  content:'';
+  position:absolute; top:0; left:10%; right:10%;
+  height:2px;
+  background:linear-gradient(90deg, transparent, var(--magma2), transparent);
+  box-shadow:0 0 8px var(--magma2);
+}
+.nav-icon { font-size:1.3rem; line-height:1; }
+.nav-label { font-size:0.55rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; }
+
+/* ====== CARDS ====== */
+.card {
+  background:linear-gradient(135deg, rgba(30,8,0,0.9), rgba(20,5,0,0.95));
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:12px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,100,0,0.1);
+}
+.card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,120,0,0.5), transparent);
+}
+.card-title {
+  font-family:'Cinzel', serif;
+  font-size:0.75rem;
+  color:var(--magma2);
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.card-title::after {
+  content:'';
+  flex:1; height:1px;
+  background:linear-gradient(90deg, rgba(255,80,0,0.4), transparent);
+}
+
+/* ====== HOME TAB ====== */
+.world-state {
+  background:linear-gradient(135deg, rgba(180,30,0,0.15), rgba(255,80,0,0.05));
+  border:1px solid rgba(255,60,0,0.35);
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:14px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.world-state::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(255,60,0,0.08), transparent);
+  animation:breathe 3s ease-in-out infinite alternate;
+}
+@keyframes breathe { 0%{opacity:0.5} 100%{opacity:1} }
+
+.world-danger {
+  font-family:'Cinzel', serif;
+  font-size:0.65rem;
+  color:var(--text3);
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.world-level {
+  font-family:'Cinzel', serif;
+  font-size:2rem;
+  font-weight:900;
+  color:var(--magma);
+  text-shadow:0 0 30px var(--magma), 0 0 60px rgba(255,40,0,0.4);
+  animation:pulseGlow 2s ease-in-out infinite;
+  margin-bottom:4px;
+}
+.world-desc {
+  font-size:0.8rem;
+  color:var(--text2);
+  margin-bottom:12px;
+}
+
+.stats-row {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px; margin-bottom:14px;
+}
+.stat-box {
+  background:rgba(20,5,0,0.8);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:8px;
+  padding:10px 6px;
+  text-align:center;
+}
+.stat-val {
+  font-family:'Share Tech Mono', monospace;
+  font-size:1.1rem;
+  color:var(--magma2);
+  display:block;
+  text-shadow:0 0 10px var(--magma);
+}
+.stat-lbl {
+  font-size:0.58rem;
+  color:var(--text3);
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  margin-top:2px;
+}
+
+.alert-list { display:flex; flex-direction:column; gap:8px; }
+.alert-item {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(15,3,0,0.8);
+  border-left:3px solid var(--magma);
+  border-radius:0 8px 8px 0;
+  padding:10px 12px;
+  animation:slideIn 0.3s ease;
+}
+.alert-item.level-1 { border-left-color:#ffaa00; }
+.alert-item.level-2 { border-left-color:#ff6600; }
+.alert-item.level-3 { border-left-color:#ff2200; }
+.alert-item.level-4 { border-left-color:#cc0000; animation:alertPulse 1s ease infinite; }
+@keyframes slideIn { from{transform:translateX(-10px);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes alertPulse { 0%,100%{box-shadow:none} 50%{box-shadow:-3px 0 20px rgba(200,0,0,0.6)} }
+
+.alert-icon { font-size:1.4rem; flex-shrink:0; }
+.alert-body { flex:1; }
+.alert-title-t { font-weight:600; font-size:0.85rem; color:var(--text); }
+.alert-loc { font-size:0.7rem; color:var(--text3); font-family:'Share Tech Mono', monospace; }
+.alert-badge {
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.6rem;
+  padding:2px 6px;
+  border-radius:3px;
+  background:rgba(255,40,0,0.2);
+  color:var(--magma);
+  border:1px solid rgba(255,40,0,0.3);
+  flex-shrink:0;
+}
+
+/* ====== MINI MAP ====== */
+.mini-map {
+  width:100%; height:180px;
+  background:rgba(10,2,0,0.9);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+}
+.map-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,60,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,60,0,0.05) 1px, transparent 1px);
+  background-size:30px 30px;
+}
+.map-region {
+  position:absolute;
+  border-radius:50%;
+  cursor:pointer;
+  transition:transform 0.2s;
+}
+.map-region:active { transform:scale(1.3); }
+.map-label {
+  position:absolute;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.5rem;
+  color:var(--text3);
+  white-space:nowrap;
+  pointer-events:none;
+}
+.lava-river {
+  position:absolute;
+  height:2px;
+  border-radius:2px;
+  animation:lavaRiver 2s ease-in-out infinite alternate;
+}
+@keyframes lavaRiver { 0%{opacity:0.4} 100%{opacity:1} }
+
+.map-pulse {
+  position:absolute;
+  border-radius:50%;
+  animation:mapPulse 2s ease-out infinite;
+  pointer-events:none;
+}
+@keyframes mapPulse {
+  0% { transform:translate(-50%,-50%) scale(0); opacity:0.8; }
+  100% { transform:translate(-50%,-50%) scale(3); opacity:0; }
+}
+
+/* ====== MAP TAB ====== */
+.map-container {
+  width:100%; height:calc(100vh - 200px);
+  background:rgba(8,2,0,0.95);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  position:relative;
+  overflow:hidden;
+  touch-action:pan-x pan-y;
+}
+.map-modes {
+  display:flex; gap:6px; margin-bottom:10px;
+}
+.mode-btn {
+  flex:1;
+  padding:8px 4px;
+  background:rgba(20,5,0,0.8);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:6px;
+  color:var(--text3);
+  font-family:'Rajdhani', sans-serif;
+  font-size:0.7rem;
+  font-weight:600;
+  letter-spacing:0.08em;
+  cursor:pointer;
+  text-align:center;
+  transition:all 0.2s;
+}
+.mode-btn.active {
+  background:rgba(255,60,0,0.15);
+  border-color:var(--magma);
+  color:var(--magma2);
+  box-shadow:0 0 10px rgba(255,60,0,0.2);
+}
+
+.big-map {
+  width:100%; height:100%;
+  position:relative;
+  background:
+    radial-gradient(ellipse 80% 80% at 50% 50%, rgba(100,20,0,0.3), rgba(5,1,0,0.9)),
+    radial-gradient(ellipse 40% 60% at 20% 70%, rgba(200,60,0,0.15), transparent),
+    radial-gradient(ellipse 50% 40% at 80% 30%, rgba(150,40,0,0.1), transparent);
+}
+.region-marker {
+  position:absolute;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer;
+  transform:translate(-50%,-50%);
+  transition:transform 0.2s;
+}
+.region-marker:active { transform:translate(-50%,-50%) scale(1.2); }
+.region-dot {
+  border-radius:50%;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+.region-dot::after {
+  content:'';
+  position:absolute; inset:-4px;
+  border-radius:50%;
+  border:1px solid currentColor;
+  opacity:0.4;
+  animation:mapPulse2 2s ease-out infinite;
+}
+@keyframes mapPulse2 {
+  0%{transform:scale(0.8);opacity:0.6} 100%{transform:scale(1.8);opacity:0}
+}
+.region-name {
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.5rem;
+  color:var(--text2);
+  text-align:center;
+  white-space:nowrap;
+  text-shadow:0 1px 4px rgba(0,0,0,0.8);
+}
+
+/* Lava flows on big map */
+.lava-flow-anim {
+  position:absolute;
+  border-radius:10px;
+  animation:lavaFlowAnim 3s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes lavaFlowAnim {
+  0%{opacity:0.3; transform:scaleX(1)} 100%{opacity:0.7; transform:scaleX(1.05)}
+}
+
+/* ====== ALERTS TAB ====== */
+.alert-filter {
+  display:flex; gap:6px; margin-bottom:12px; overflow-x:auto;
+  scrollbar-width:none; padding-bottom:2px;
+}
+.alert-filter::-webkit-scrollbar { display:none; }
+.filter-btn {
+  padding:6px 12px;
+  border-radius:20px;
+  border:1px solid rgba(255,60,0,0.25);
+  background:rgba(20,5,0,0.8);
+  color:var(--text3);
+  font-family:'Rajdhani', sans-serif;
+  font-size:0.7rem;
+  font-weight:600;
+  white-space:nowrap;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.filter-btn.active {
+  background:rgba(255,40,0,0.2);
+  border-color:var(--magma);
+  color:var(--magma2);
+}
+
+.big-alert {
+  background:linear-gradient(135deg, rgba(30,5,0,0.95), rgba(20,3,0,0.9));
+  border:1px solid rgba(255,40,0,0.3);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+.big-alert.crit {
+  border-color:rgba(200,0,0,0.6);
+  animation:critAlert 1.5s ease infinite;
+}
+@keyframes critAlert {
+  0%,100%{box-shadow:0 0 0 rgba(200,0,0,0)} 50%{box-shadow:0 0 20px rgba(200,0,0,0.4)}
+}
+.alert-header {
+  display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;
+}
+.alert-emoji { font-size:1.8rem; flex-shrink:0; }
+.alert-info { flex:1; }
+.alert-name { font-family:'Cinzel', serif; font-size:0.85rem; color:var(--text); margin-bottom:2px; }
+.alert-time { font-family:'Share Tech Mono', monospace; font-size:0.6rem; color:var(--text3); }
+.danger-bar-wrap { margin-top:8px; }
+.danger-bar-label { font-size:0.65rem; color:var(--text3); margin-bottom:4px; display:flex; justify-content:space-between; }
+.danger-bar {
+  height:6px; background:rgba(255,255,255,0.05);
+  border-radius:3px; overflow:hidden;
+}
+.danger-bar-fill {
+  height:100%;
+  border-radius:3px;
+  transition:width 1s ease;
+  box-shadow:0 0 6px currentColor;
+}
+.alert-desc { font-size:0.78rem; color:var(--text2); line-height:1.5; margin-top:8px; }
+
+/* ====== REGIONS TAB ====== */
+.region-card {
+  background:linear-gradient(135deg, rgba(25,6,0,0.9), rgba(15,3,0,0.95));
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+.region-card:active { transform:scale(0.98); }
+.region-card::after {
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(135deg, rgba(255,60,0,0.05), transparent);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.region-card:hover::after { opacity:1; }
+
+.region-header { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.region-icon { font-size:2rem; }
+.region-title-g { flex:1; }
+.region-name-t { font-family:'Cinzel', serif; font-size:1rem; color:var(--text); font-weight:700; }
+.region-type { font-size:0.65rem; color:var(--text3); font-family:'Share Tech Mono', monospace; letter-spacing:0.15em; }
+.stability-badge {
+  padding:4px 8px;
+  border-radius:4px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.6rem;
+  font-weight:600;
+}
+.stab-danger { background:rgba(200,0,0,0.2); border:1px solid rgba(200,0,0,0.4); color:#ff6666; }
+.stab-warning { background:rgba(255,120,0,0.15); border:1px solid rgba(255,120,0,0.3); color:#ffaa44; }
+.stab-stable { background:rgba(100,200,0,0.1); border:1px solid rgba(100,200,0,0.2); color:#88cc44; }
+
+.region-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:10px; }
+.r-stat { background:rgba(15,3,0,0.8); border-radius:6px; padding:8px; }
+.r-stat-val { font-family:'Share Tech Mono', monospace; font-size:0.9rem; color:var(--magma2); }
+.r-stat-lbl { font-size:0.6rem; color:var(--text3); text-transform:uppercase; margin-top:2px; }
+
+.survival-tips { background:rgba(255,60,0,0.05); border:1px solid rgba(255,60,0,0.15); border-radius:6px; padding:10px; }
+.survival-title { font-size:0.65rem; color:var(--magma); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:6px; }
+.survival-tip { font-size:0.72rem; color:var(--text2); padding:2px 0; display:flex; gap:6px; }
+.survival-tip::before { content:'▶'; color:var(--magma); font-size:0.5rem; margin-top:2px; }
+
+/* ====== SURVEILLANCE TAB ====== */
+.cam-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.cam-feed {
+  aspect-ratio:16/10;
+  background:rgba(5,1,0,0.9);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:8px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+}
+.cam-scanline {
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(
+    0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px
+  );
+  pointer-events:none;
+  z-index:2;
+}
+.cam-noise {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at var(--cx,50%) var(--cy,50%), rgba(255,80,0,0.15), rgba(100,20,0,0.1) 40%, rgba(5,1,0,0.8));
+  animation:camNoise 3s ease-in-out infinite alternate;
+}
+@keyframes camNoise {
+  0%{--cx:30%;--cy:60%;opacity:0.6} 50%{--cx:70%;--cy:40%;opacity:0.9} 100%{--cx:50%;--cy:70%;opacity:0.7}
+}
+.cam-overlay {
+  position:absolute; inset:0; z-index:3;
+  display:flex; flex-direction:column;
+  padding:6px;
+}
+.cam-rec {
+  display:flex; align-items:center; gap:4px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.5rem; color:#ff4444;
+}
+.cam-rec-dot { width:5px; height:5px; border-radius:50%; background:#ff4444; animation:blink 1s ease infinite; }
+.cam-name { font-family:'Share Tech Mono', monospace; font-size:0.52rem; color:var(--text2); margin-top:auto; }
+.cam-temp-t { font-family:'Share Tech Mono', monospace; font-size:0.7rem; color:var(--magma3); }
+
+/* Seismic Graph */
+.seismic-graph {
+  width:100%; height:80px;
+  position:relative;
+  background:rgba(5,1,0,0.8);
+  border:1px solid rgba(255,60,0,0.15);
+  border-radius:6px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.seismic-svg { width:100%; height:100%; }
+
+/* Radar */
+.radar-wrap {
+  display:flex; align-items:center; justify-content:center;
+  padding:10px;
+}
+.radar-circle {
+  width:120px; height:120px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(5,1,0,0.9), rgba(10,2,0,0.9));
+  border:1px solid rgba(255,60,0,0.3);
+  position:relative;
+  overflow:hidden;
+}
+.radar-sweep {
+  position:absolute; inset:0;
+  background:conic-gradient(from 0deg, transparent 340deg, rgba(255,100,0,0.6) 355deg, transparent 360deg);
+  animation:radarSweep 3s linear infinite;
+  border-radius:50%;
+}
+@keyframes radarSweep { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.radar-ring {
+  position:absolute; border-radius:50%;
+  border:1px solid rgba(255,60,0,0.15);
+  top:50%; left:50%; transform:translate(-50%,-50%);
+}
+.radar-blip {
+  position:absolute;
+  width:5px; height:5px;
+  border-radius:50%;
+  background:var(--magma);
+  box-shadow:0 0 6px var(--magma);
+  transform:translate(-50%,-50%);
+  animation:radarBlip 3s ease-in-out infinite;
+}
+@keyframes radarBlip { 0%,100%{opacity:0} 40%,60%{opacity:1} }
+
+/* ====== ENCYCLOPEDIA TAB ====== */
+.ency-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.ency-card {
+  background:rgba(20,5,0,0.85);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  padding:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-align:center;
+}
+.ency-card:active { transform:scale(0.95); border-color:var(--magma); }
+.ency-icon { font-size:2rem; margin-bottom:6px; display:block; }
+.ency-name { font-family:'Cinzel', serif; font-size:0.7rem; color:var(--text); margin-bottom:2px; }
+.ency-count { font-family:'Share Tech Mono', monospace; font-size:0.58rem; color:var(--text3); }
+
+.ency-entry {
+  background:rgba(15,3,0,0.9);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.ency-entry-header { display:flex; gap:10px; margin-bottom:8px; }
+.ency-entry-icon { font-size:2.5rem; }
+.ency-entry-title { font-family:'Cinzel', serif; font-size:0.9rem; color:var(--magma2); margin-bottom:2px; }
+.ency-entry-class { font-family:'Share Tech Mono', monospace; font-size:0.58rem; color:var(--text3); }
+.ency-entry-desc { font-size:0.75rem; color:var(--text2); line-height:1.6; }
+.ency-tags { display:flex; gap:4px; flex-wrap:wrap; margin-top:8px; }
+.ency-tag {
+  background:rgba(255,60,0,0.1);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:3px;
+  padding:2px 6px;
+  font-size:0.55rem;
+  color:var(--text3);
+  font-family:'Share Tech Mono', monospace;
+}
+
+/* ====== SURVIVAL TAB ====== */
+.guide-card {
+  background:linear-gradient(135deg, rgba(25,6,0,0.9), rgba(15,3,0,0.95));
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:12px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.guide-header {
+  padding:14px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer;
+  border-bottom:1px solid rgba(255,60,0,0.1);
+}
+.guide-icon { font-size:1.6rem; }
+.guide-title { font-family:'Cinzel', serif; font-size:0.85rem; color:var(--text); font-weight:700; flex:1; }
+.guide-arrow { color:var(--text3); font-size:0.8rem; transition:transform 0.2s; }
+.guide-card.open .guide-arrow { transform:rotate(90deg); }
+.guide-content { padding:14px; display:none; }
+.guide-card.open .guide-content { display:block; }
+.guide-step {
+  display:flex; gap:10px; margin-bottom:10px;
+}
+.step-num {
+  width:22px; height:22px;
+  border-radius:50%;
+  background:rgba(255,60,0,0.2);
+  border:1px solid rgba(255,60,0,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.6rem;
+  color:var(--magma2);
+  flex-shrink:0;
+}
+.step-text { font-size:0.75rem; color:var(--text2); line-height:1.5; }
+
+.equip-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.equip-item {
+  background:rgba(20,5,0,0.85);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+}
+.equip-icon { font-size:1.8rem; display:block; margin-bottom:6px; }
+.equip-name { font-family:'Rajdhani', sans-serif; font-size:0.75rem; font-weight:600; color:var(--text); }
+.equip-resist { font-size:0.6rem; color:var(--text3); margin-top:2px; }
+.resist-bar { height:3px; background:rgba(255,255,255,0.05); border-radius:2px; margin-top:4px; overflow:hidden; }
+.resist-fill { height:100%; border-radius:2px; }
+
+/* ====== JOURNAL TAB ====== */
+.news-ticker-bar {
+  background:rgba(200,30,0,0.15);
+  border:1px solid rgba(200,30,0,0.3);
+  border-radius:6px;
+  padding:8px 12px;
+  margin-bottom:12px;
+  overflow:hidden;
+  white-space:nowrap;
+}
+.news-ticker-inner {
+  display:inline-block;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.65rem;
+  color:var(--magma);
+  animation: ticker 30s linear infinite;
+}
+
+.article-card {
+  background:rgba(18,4,0,0.9);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  margin-bottom:10px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.article-card:active { transform:scale(0.98); }
+.article-img {
+  width:100%; height:90px;
+  background:var(--surface);
+  position:relative;
+  overflow:hidden;
+}
+.article-img-bg {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at var(--ax,50%) var(--ay,50%), var(--ac,rgba(255,60,0,0.3)), rgba(10,2,0,0.8));
+  animation:articleBg 5s ease-in-out infinite alternate;
+}
+@keyframes articleBg { 0%{opacity:0.6} 100%{opacity:1} }
+.article-category {
+  position:absolute; top:8px; left:8px;
+  background:rgba(200,0,0,0.8);
+  color:#fff;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.55rem;
+  padding:2px 6px;
+  border-radius:3px;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+}
+.article-body { padding:12px; }
+.article-title { font-family:'Cinzel', serif; font-size:0.82rem; color:var(--text); margin-bottom:6px; line-height:1.4; }
+.article-excerpt { font-size:0.72rem; color:var(--text3); line-height:1.5; margin-bottom:8px; }
+.article-meta { display:flex; justify-content:space-between; font-family:'Share Tech Mono', monospace; font-size:0.58rem; color:var(--text3); }
+
+/* ====== BOUTIQUE TAB ====== */
+.shop-banner {
+  background:linear-gradient(135deg, rgba(180,40,0,0.2), rgba(100,20,0,0.15));
+  border:1px solid rgba(255,80,0,0.3);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:12px;
+  text-align:center;
+}
+.shop-banner-title {
+  font-family:'Cinzel', serif;
+  font-size:1.1rem;
+  color:var(--magma2);
+  text-shadow:0 0 20px var(--magma);
+  margin-bottom:4px;
+}
+.shop-promo { font-size:0.72rem; color:var(--text2); }
+.promo-badge {
+  display:inline-block;
+  background:rgba(255,60,0,0.2);
+  border:1px solid var(--magma);
+  color:var(--magma2);
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.6rem;
+  padding:3px 8px;
+  border-radius:4px;
+  margin-top:6px;
+  animation:promoAnim 2s ease-in-out infinite;
+}
+@keyframes promoAnim { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 15px rgba(255,60,0,0.4)} }
+
+.cart-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(20,5,0,0.9);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:8px;
+  padding:10px 14px;
+  margin-bottom:12px;
+}
+.cart-info { font-size:0.75rem; color:var(--text2); }
+.cart-count {
+  display:inline-block;
+  background:var(--magma);
+  color:#fff;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.65rem;
+  width:18px; height:18px;
+  border-radius:50%;
+  text-align:center; line-height:18px;
+  margin-left:6px;
+}
+.cart-total { font-family:'Share Tech Mono', monospace; font-size:0.85rem; color:var(--magma3); }
+
+.shop-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.shop-item {
+  background:rgba(18,4,0,0.9);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:10px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+}
+.shop-item:active { transform:scale(0.96); }
+.shop-item.fav .fav-btn { color:var(--magma2); }
+.item-img {
+  height:80px;
+  background:var(--surface);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.item-img-bg {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse, var(--ic,rgba(255,60,0,0.15)), transparent 70%);
+}
+.item-badge {
+  position:absolute; top:6px; left:6px;
+  background:rgba(200,0,0,0.85);
+  color:#fff;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.5rem;
+  padding:1px 5px;
+  border-radius:2px;
+}
+.fav-btn {
+  position:absolute; top:6px; right:6px;
+  background:rgba(0,0,0,0.5);
+  border:none; border-radius:50%;
+  width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:0.65rem;
+  color:var(--text3);
+  transition:color 0.2s;
+}
+.item-body { padding:10px; }
+.item-name { font-family:'Rajdhani', sans-serif; font-size:0.78rem; font-weight:600; color:var(--text); margin-bottom:2px; }
+.item-desc { font-size:0.6rem; color:var(--text3); margin-bottom:6px; }
+.item-price-row { display:flex; align-items:center; justify-content:space-between; }
+.item-price { font-family:'Share Tech Mono', monospace; font-size:0.85rem; color:var(--magma3); }
+.item-old-price { font-size:0.6rem; color:var(--text3); text-decoration:line-through; margin-left:4px; }
+.add-btn {
+  width:26px; height:26px;
+  border-radius:50%;
+  background:rgba(255,60,0,0.2);
+  border:1px solid rgba(255,60,0,0.4);
+  color:var(--magma2);
+  font-size:1rem;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.add-btn:active { background:rgba(255,60,0,0.5); transform:scale(0.9); }
+
+/* ====== SETTINGS TAB ====== */
+.setting-group { margin-bottom:16px; }
+.setting-group-title {
+  font-family:'Cinzel', serif;
+  font-size:0.65rem;
+  color:var(--text3);
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  padding:0 0 8px;
+  border-bottom:1px solid rgba(255,60,0,0.1);
+  margin-bottom:10px;
+}
+.setting-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px;
+  background:rgba(20,5,0,0.7);
+  border-radius:8px;
+  margin-bottom:6px;
+  border:1px solid rgba(255,60,0,0.1);
+}
+.setting-label { font-size:0.82rem; color:var(--text); }
+.setting-sub { font-size:0.62rem; color:var(--text3); margin-top:2px; }
+
+/* Toggle */
+.toggle {
+  width:44px; height:24px;
+  background:rgba(255,255,255,0.05);
+  border-radius:12px;
+  border:1px solid rgba(255,60,0,0.2);
+  cursor:pointer;
+  position:relative;
+  transition:all 0.2s;
+}
+.toggle.on { background:rgba(255,60,0,0.3); border-color:var(--magma); }
+.toggle-knob {
+  width:18px; height:18px;
+  border-radius:50%;
+  background:var(--text3);
+  position:absolute; top:2px; left:2px;
+  transition:all 0.2s;
+  box-shadow:0 1px 4px rgba(0,0,0,0.5);
+}
+.toggle.on .toggle-knob { left:22px; background:var(--magma2); box-shadow:0 0 8px var(--magma); }
+
+/* Select */
+.setting-select {
+  background:rgba(20,5,0,0.9);
+  border:1px solid rgba(255,60,0,0.3);
+  border-radius:6px;
+  color:var(--text2);
+  font-family:'Rajdhani', sans-serif;
+  font-size:0.78rem;
+  padding:4px 8px;
+  outline:none;
+  cursor:pointer;
+}
+.setting-select option { background:var(--dark); }
+
+/* Theme swatches */
+.theme-swatches { display:flex; gap:8px; }
+.swatch {
+  width:28px; height:28px;
+  border-radius:50%;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:all 0.2s;
+}
+.swatch.active { border-color:#fff; transform:scale(1.2); }
+
+/* ====== MODAL ====== */
+#modal {
+  position:fixed; inset:0; z-index:100;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  align-items:flex-end;
+  animation:modalIn 0.3s ease;
+  backdrop-filter:blur(4px);
+}
+#modal.open { display:flex; }
+@keyframes modalIn { from{opacity:0} to{opacity:1} }
+.modal-sheet {
+  width:100%;
+  max-height:80vh;
+  background:linear-gradient(to top, var(--dark), var(--surface));
+  border-radius:20px 20px 0 0;
+  border-top:1px solid rgba(255,60,0,0.3);
+  overflow-y:auto;
+  padding:20px 16px 40px;
+  animation:sheetUp 0.3s ease;
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle {
+  width:40px; height:3px;
+  background:rgba(255,60,0,0.3);
+  border-radius:2px;
+  margin:0 auto 16px;
+}
+.modal-title {
+  font-family:'Cinzel', serif;
+  font-size:1.1rem;
+  color:var(--magma2);
+  margin-bottom:6px;
+  text-align:center;
+  text-shadow:0 0 20px var(--magma);
+}
+.modal-sub { font-size:0.75rem; color:var(--text3); text-align:center; margin-bottom:14px; }
+.modal-close {
+  position:absolute; top:16px; right:16px;
+  background:rgba(255,60,0,0.1);
+  border:1px solid rgba(255,60,0,0.2);
+  border-radius:50%;
+  width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--text3); font-size:0.9rem;
+}
+
+/* ====== TOAST ====== */
+#toast {
+  position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  z-index:200;
+  background:rgba(200,40,0,0.95);
+  color:#fff;
+  padding:10px 18px;
+  border-radius:20px;
+  font-family:'Rajdhani', sans-serif;
+  font-size:0.8rem;
+  font-weight:600;
+  box-shadow:0 4px 20px rgba(200,0,0,0.5);
+  opacity:0;
+  transition:opacity 0.3s;
+  white-space:nowrap;
+  border:1px solid rgba(255,80,0,0.4);
+}
+#toast.show { opacity:1; }
+
+/* ====== SECTION TITLE ====== */
+.section-title {
+  font-family:'Cinzel', serif;
+  font-size:0.7rem;
+  color:var(--text3);
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  margin:14px 0 10px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-title::after {
+  content:'';
+  flex:1; height:1px;
+  background:linear-gradient(90deg, rgba(255,60,0,0.3), transparent);
+}
+
+/* ====== PWA Offline Banner ====== */
+#offline-banner {
+  position:fixed; top:60px; left:0; right:0;
+  background:rgba(200,100,0,0.9);
+  color:#fff; text-align:center;
+  padding:6px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:0.65rem;
+  z-index:50;
+  display:none;
+}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="logo-192.png">
+<meta name="theme-color" content="#ff3c00">
+
+</head>
+<body>
+
+<div id="lava-bg"><div id="lava-flow"></div></div>
+<div id="particles"></div>
+<div id="offline-banner">⚡ MODE HORS LIGNE — Données mises en cache actives</div>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-volcano">
+    <svg viewBox="0 0 200 200" fill="none">
+      <defs>
+        <radialGradient id="sg1" cx="50%" cy="80%" r="60%">
+          <stop offset="0%" stop-color="#ff4400" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#ff0000" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <!-- Volcano shape -->
+      <path d="M100 20 L170 180 L30 180 Z" fill="rgba(30,8,0,0.9)" stroke="rgba(255,80,0,0.4)" stroke-width="1"/>
+      <path d="M100 20 L145 180 L55 180 Z" fill="rgba(50,15,0,0.7)"/>
+      <!-- Crater -->
+      <ellipse cx="100" cy="22" rx="18" ry="8" fill="rgba(255,60,0,0.3)" stroke="rgba(255,100,0,0.5)" stroke-width="1"/>
+      <!-- Lava glow -->
+      <ellipse cx="100" cy="22" rx="12" ry="5" fill="url(#sg1)" filter="url(#glow)"/>
+      <!-- Smoke puffs -->
+      <circle cx="100" cy="5" r="8" fill="rgba(60,30,15,0.4)"/>
+      <circle cx="90" cy="-5" r="6" fill="rgba(60,30,15,0.3)"/>
+      <circle cx="112" cy="-2" r="7" fill="rgba(60,30,15,0.35)"/>
+      <!-- Lava flows -->
+      <path d="M100 30 Q115 80 130 140 L118 140 Q108 80 100 42 Q92 80 82 140 L70 140 Q85 80 100 30Z" fill="rgba(255,60,0,0.2)"/>
+      <!-- Embers -->
+      <circle cx="85" cy="15" r="2" fill="#ff8800" filter="url(#glow)"/>
+      <circle cx="116" cy="10" r="1.5" fill="#ffaa00" filter="url(#glow)"/>
+      <circle cx="100" cy="5" r="1" fill="#ffdd00" filter="url(#glow)"/>
+    </svg>
+  </div>
+  <div class="splash-title">NÉRESIA</div>
+  <div class="splash-sub">Système de Surveillance — Monde de Volcain</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  <div class="splash-status" id="splash-status">Initialisation des capteurs thermiques...</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo">NÉ<span>R</span>ESIA</div>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      <div class="alert-ticker">
+        <span class="ticker-inner">⚠ ALERTE NIVEAU 4 — Craterium Central | 🌡 Température mondiale: 847°C | ⚡ Activité sismique: CRITIQUE | 🔥 Coulée détectée: Monts Cendriers Est | ☠ Zone rouge étendue | Evacuation recommandée secteur J-7</span>
+      </div>
+    </div>
+    <div class="header-temp">847°C</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- HOME -->
+    <div class="tab-panel active" id="tab-home">
+      <div class="world-state">
+        <div class="world-danger">État Global — Volcain</div>
+        <div class="world-level">CRITIQUE</div>
+        <div class="world-desc">Activité volcanique en hausse de 340% — 12 événements majeurs actifs</div>
+        <div class="stats-row">
+          <div class="stat-box"><span class="stat-val">847°C</span><div class="stat-lbl">Temp. Moy.</div></div>
+          <div class="stat-box"><span class="stat-val">9.2</span><div class="stat-lbl">Sismique</div></div>
+          <div class="stat-box"><span class="stat-val">84%</span><div class="stat-lbl">Danger</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🌍 Carte des Zones Actives</div>
+        <div class="mini-map" onclick="switchTab('carte')">
+          <div class="map-grid"></div>
+          <!-- Lava rivers -->
+          <div class="lava-river" style="top:55%;left:20%;width:25%;transform:rotate(-15deg);background:linear-gradient(90deg,#ff4400,#ff8800);opacity:0.6;"></div>
+          <div class="lava-river" style="top:70%;left:50%;width:20%;transform:rotate(10deg);background:linear-gradient(90deg,#ff6600,#ff4400);opacity:0.5;"></div>
+          <!-- Regions -->
+          <div class="map-region" style="width:24px;height:24px;top:35%;left:40%;background:radial-gradient(circle,#ff4400,#cc0000);box-shadow:0 0 15px #ff4400;">
+            <div class="map-pulse" style="width:24px;height:24px;border:2px solid #ff4400;top:50%;left:50%;"></div>
+          </div>
+          <div class="map-region" style="width:18px;height:18px;top:60%;left:20%;background:radial-gradient(circle,#ff8800,#ff4400);box-shadow:0 0 10px #ff8800;"></div>
+          <div class="map-region" style="width:20px;height:20px;top:25%;left:70%;background:radial-gradient(circle,#ffaa00,#ff6600);box-shadow:0 0 12px #ffaa00;"></div>
+          <div class="map-region" style="width:14px;height:14px;top:75%;left:65%;background:radial-gradient(circle,#cc2200,#880000);box-shadow:0 0 8px #cc2200;"></div>
+          <div class="map-label" style="top:28%;left:38%;">Craterium</div>
+          <div class="map-label" style="top:53%;left:14%;">M.Cendriers</div>
+          <div class="map-label" style="top:18%;left:63%;">Ruines Japon</div>
+          <div class="map-label" style="top:68%;left:58%;">Sulfuria</div>
+        </div>
+      </div>
+
+      <div class="section-title">Alertes Actives</div>
+      <div class="alert-list">
+        <div class="alert-item level-4">
+          <div class="alert-icon">🌋</div>
+          <div class="alert-body">
+            <div class="alert-title-t">Éruption Majeure — Craterium Central</div>
+            <div class="alert-loc">LAT 23.7°N / LON 98.4°E — il y a 3 min</div>
+          </div>
+          <div class="alert-badge">NIV.4</div>
+        </div>
+        <div class="alert-item level-3">
+          <div class="alert-icon">⚡</div>
+          <div class="alert-body">
+            <div class="alert-title-t">Tempête Pyroclastique Détectée</div>
+            <div class="alert-loc">Monts Cendriers — il y a 12 min</div>
+          </div>
+          <div class="alert-badge">NIV.3</div>
+        </div>
+        <div class="alert-item level-2">
+          <div class="alert-icon">☁️</div>
+          <div class="alert-body">
+            <div class="alert-title-t">Nuages Toxiques — Sulfuria</div>
+            <div class="alert-loc">Plaine Sud — il y a 28 min</div>
+          </div>
+          <div class="alert-badge">NIV.2</div>
+        </div>
+        <div class="alert-item level-1">
+          <div class="alert-icon">🌡️</div>
+          <div class="alert-body">
+            <div class="alert-title-t">Pic Thermique Anormal</div>
+            <div class="alert-loc">Ruines Japon Volcanique — il y a 1h</div>
+          </div>
+          <div class="alert-badge">NIV.1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARTE -->
+    <div class="tab-panel" id="tab-carte">
+      <div class="map-modes">
+        <button class="mode-btn active" onclick="setMode(this,'météo')">🌡 Météo</button>
+        <button class="mode-btn" onclick="setMode(this,'géo')">⛰ Géologie</button>
+        <button class="mode-btn" onclick="setMode(this,'danger')">⚠ Danger</button>
+        <button class="mode-btn" onclick="setMode(this,'thermique')">🔥 Thermique</button>
+      </div>
+      <div class="map-container">
+        <div class="big-map" id="big-map">
+          <!-- Lava flows -->
+          <div class="lava-flow-anim" style="top:40%;left:25%;width:30%;height:8px;background:linear-gradient(90deg,#ff4400,#ff8800,#ff4400);transform:rotate(-8deg);box-shadow:0 0 15px #ff6600;"></div>
+          <div class="lava-flow-anim" style="top:55%;left:15%;width:20%;height:6px;background:linear-gradient(90deg,#cc3300,#ff6600);transform:rotate(12deg);box-shadow:0 0 10px #ff4400;"></div>
+          <div class="lava-flow-anim" style="top:65%;left:55%;width:25%;height:5px;background:linear-gradient(90deg,#ff6600,#cc3300);transform:rotate(-5deg);box-shadow:0 0 12px #ff6600;"></div>
+          <!-- Mountain shapes -->
+          <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.3" viewBox="0 0 400 300">
+            <path d="M60 250 L110 140 L160 250Z" fill="rgba(80,20,0,0.6)" stroke="rgba(255,60,0,0.3)" stroke-width="0.5"/>
+            <path d="M130 250 L190 100 L250 250Z" fill="rgba(100,25,0,0.8)" stroke="rgba(255,80,0,0.4)" stroke-width="0.5"/>
+            <path d="M220 250 L270 150 L320 250Z" fill="rgba(70,15,0,0.6)" stroke="rgba(255,60,0,0.25)" stroke-width="0.5"/>
+            <path d="M300 250 L340 170 L380 250Z" fill="rgba(90,20,0,0.7)" stroke="rgba(255,60,0,0.3)" stroke-width="0.5"/>
+            <path d="M10 250 L50 180 L90 250Z" fill="rgba(60,15,0,0.5)" stroke="rgba(255,60,0,0.2)" stroke-width="0.5"/>
+          </svg>
+          <!-- Region markers -->
+          <div class="region-marker" style="top:42%;left:45%;" onclick="openRegionModal('craterium')">
+            <div class="region-dot" style="width:22px;height:22px;background:radial-gradient(circle,#ff2200,#cc0000);box-shadow:0 0 20px #ff2200;color:#ff4400;"></div>
+            <div class="region-name">Craterium Central</div>
+          </div>
+          <div class="region-marker" style="top:62%;left:22%;" onclick="openRegionModal('monts')">
+            <div class="region-dot" style="width:18px;height:18px;background:radial-gradient(circle,#ff6600,#cc3300);box-shadow:0 0 15px #ff6600;color:#ff8800;"></div>
+            <div class="region-name">Monts Cendriers</div>
+          </div>
+          <div class="region-marker" style="top:28%;left:72%;" onclick="openRegionModal('japon')">
+            <div class="region-dot" style="width:16px;height:16px;background:radial-gradient(circle,#ffaa00,#ff6600);box-shadow:0 0 12px #ffaa00;color:#ffaa00;"></div>
+            <div class="region-name">Ruines Japon Volcanique</div>
+          </div>
+          <div class="region-marker" style="top:73%;left:68%;" onclick="openRegionModal('sulfuria')">
+            <div class="region-dot" style="width:14px;height:14px;background:radial-gradient(circle,#cc4400,#880000);box-shadow:0 0 10px #cc4400;color:#cc4400;"></div>
+            <div class="region-name">Sulfuria</div>
+          </div>
+          <div class="region-marker" style="top:18%;left:35%;" onclick="openRegionModal('glacis')">
+            <div class="region-dot" style="width:12px;height:12px;background:radial-gradient(circle,#ff8800,#cc4400);box-shadow:0 0 8px #ff8800;color:#ff8800;"></div>
+            <div class="region-name">Glacis Fumants</div>
+          </div>
+          <!-- Map UI -->
+          <div style="position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;">
+            <div style="background:rgba(10,2,0,0.8);border:1px solid rgba(255,60,0,0.2);border-radius:4px;padding:4px 8px;font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--text3);">VOLCAIN</div>
+            <div style="background:rgba(10,2,0,0.8);border:1px solid rgba(255,60,0,0.2);border-radius:4px;padding:4px 8px;font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--magma);">LIVE ●</div>
+          </div>
+          <div style="position:absolute;bottom:8px;left:8px;font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:rgba(255,100,0,0.5);">NÉRESIA SYSTEM v4.2 — VOLCAIN</div>
+        </div>
+      </div>
+      <div class="section-title" style="margin-top:12px;">Légende</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:var(--text3);"><span style="width:10px;height:10px;border-radius:50%;background:#ff2200;display:inline-block;box-shadow:0 0 6px #ff2200;"></span>Extinction</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:var(--text3);"><span style="width:10px;height:10px;border-radius:50%;background:#ff6600;display:inline-block;box-shadow:0 0 6px #ff6600;"></span>Critique</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:var(--text3);"><span style="width:10px;height:10px;border-radius:50%;background:#ffaa00;display:inline-block;box-shadow:0 0 6px #ffaa00;"></span>Danger</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:var(--text3);"><span style="width:10px;height:10px;border-radius:50%;background:#cc4400;display:inline-block;box-shadow:0 0 6px #cc4400;"></span>Modéré</div>
+      </div>
+    </div>
+
+    <!-- ALERTES -->
+    <div class="tab-panel" id="tab-alertes">
+      <div class="alert-filter">
+        <button class="filter-btn active" onclick="filterAlerts(this,'tous')">Tous</button>
+        <button class="filter-btn" onclick="filterAlerts(this,'eruption')">🌋 Éruptions</button>
+        <button class="filter-btn" onclick="filterAlerts(this,'sismique')">⚡ Sismique</button>
+        <button class="filter-btn" onclick="filterAlerts(this,'toxique')">☁️ Toxique</button>
+        <button class="filter-btn" onclick="filterAlerts(this,'thermique')">🌡 Thermique</button>
+      </div>
+
+      <div class="big-alert crit">
+        <div class="alert-header">
+          <div class="alert-emoji">🌋</div>
+          <div class="alert-info">
+            <div class="alert-name">ÉRUPTION CATASTROPHIQUE — Craterium Central</div>
+            <div class="alert-time">🕐 Il y a 3 minutes — Zone: CC-7 Alpha</div>
+          </div>
+        </div>
+        <div class="danger-bar-wrap">
+          <div class="danger-bar-label"><span>Niveau de Danger</span><span style="color:var(--magma)">EXTINCTION LOCALE</span></div>
+          <div class="danger-bar"><div class="danger-bar-fill" style="width:95%;background:linear-gradient(90deg,#ff6600,#ff0000);color:#ff2200;box-shadow:0 0 8px #ff2200;"></div></div>
+        </div>
+        <div class="alert-desc">Colonne éruptive atteignant 18 km d'altitude. Flux pyroclastique en progression vers les secteurs Est. Evacuation immédiate recommandée dans un rayon de 80 km.</div>
+      </div>
+
+      <div class="big-alert">
+        <div class="alert-header">
+          <div class="alert-emoji">⚡</div>
+          <div class="alert-info">
+            <div class="alert-name">Tempête Pyroclastique — Monts Cendriers</div>
+            <div class="alert-time">🕐 Il y a 12 minutes — Zone: MC-3 Beta</div>
+          </div>
+        </div>
+        <div class="danger-bar-wrap">
+          <div class="danger-bar-label"><span>Niveau de Danger</span><span style="color:#ff6600">CRITIQUE</span></div>
+          <div class="danger-bar"><div class="danger-bar-fill" style="width:75%;background:linear-gradient(90deg,#ff8800,#ff4400);color:#ff6600;"></div></div>
+        </div>
+        <div class="alert-desc">Vents pyroclastiques à 340 km/h avec particules incandescentes. Visibilité nulle. Équipement anti-chaleur obligatoire.</div>
+      </div>
+
+      <div class="big-alert">
+        <div class="alert-header">
+          <div class="alert-emoji">☁️</div>
+          <div class="alert-info">
+            <div class="alert-name">Nuages Toxiques SO₂ — Plaine de Sulfuria</div>
+            <div class="alert-time">🕐 Il y a 28 minutes — Zone: SF-1</div>
+          </div>
+        </div>
+        <div class="danger-bar-wrap">
+          <div class="danger-bar-label"><span>Niveau de Danger</span><span style="color:#ffaa00">ÉLEVÉ</span></div>
+          <div class="danger-bar"><div class="danger-bar-fill" style="width:55%;background:linear-gradient(90deg,#ffaa00,#ff6600);color:#ffaa00;"></div></div>
+        </div>
+        <div class="alert-desc">Concentration SO₂ : 2400 ppm. Portez masques filtrants de niveau 5+. Durée estimée : 6 heures.</div>
+      </div>
+
+      <div class="big-alert">
+        <div class="alert-header">
+          <div class="alert-emoji">🌡️</div>
+          <div class="alert-info">
+            <div class="alert-name">Anomalie Thermique — Ruines Japon Volcanique</div>
+            <div class="alert-time">🕐 Il y a 1 heure — Zone: RJV-North</div>
+          </div>
+        </div>
+        <div class="danger-bar-wrap">
+          <div class="danger-bar-label"><span>Niveau de Danger</span><span style="color:#ffdd00">MODÉRÉ</span></div>
+          <div class="danger-bar"><div class="danger-bar-fill" style="width:35%;background:linear-gradient(90deg,#ffdd00,#ffaa00);color:#ffdd00;"></div></div>
+        </div>
+        <div class="alert-desc">Pics thermiques à 1200°C relevés dans les anciens quartiers industriels. Surveillance accrue.</div>
+      </div>
+    </div>
+
+    <!-- REGIONS -->
+    <div class="tab-panel" id="tab-regions">
+      <div class="region-card" onclick="openRegionModal('craterium')">
+        <div class="region-header">
+          <div class="region-icon">🌋</div>
+          <div class="region-title-g">
+            <div class="region-name-t">Craterium Central</div>
+            <div class="region-type">ZONE VOLCANIQUE PRIMAIRE</div>
+          </div>
+          <div class="stability-badge stab-danger">INSTABLE</div>
+        </div>
+        <div class="region-stats">
+          <div class="r-stat"><div class="r-stat-val">1847°C</div><div class="r-stat-lbl">Température</div></div>
+          <div class="r-stat"><div class="r-stat-val">9.2/10</div><div class="r-stat-lbl">Activité</div></div>
+          <div class="r-stat"><div class="r-stat-val">124k</div><div class="r-stat-lbl">Population</div></div>
+          <div class="r-stat"><div class="r-stat-val">ROUGE</div><div class="r-stat-lbl">Code Danger</div></div>
+        </div>
+        <div class="survival-tips">
+          <div class="survival-title">🛡 Conseils de Survie</div>
+          <div class="survival-tip">Armure thermique niveau 6+ obligatoire</div>
+          <div class="survival-tip">Éviter les couloirs de lave entre 14h et 18h</div>
+          <div class="survival-tip">Détecteur sismique activé en permanence</div>
+        </div>
+      </div>
+
+      <div class="region-card" onclick="openRegionModal('monts')">
+        <div class="region-header">
+          <div class="region-icon">⛰️</div>
+          <div class="region-title-g">
+            <div class="region-name-t">Monts Cendriers</div>
+            <div class="region-type">CHAÎNE MONTAGNEUSE VOLCANIQUE</div>
+          </div>
+          <div class="stability-badge stab-danger">CRITIQUE</div>
+        </div>
+        <div class="region-stats">
+          <div class="r-stat"><div class="r-stat-val">680°C</div><div class="r-stat-lbl">Température</div></div>
+          <div class="r-stat"><div class="r-stat-val">7.8/10</div><div class="r-stat-lbl">Activité</div></div>
+          <div class="r-stat"><div class="r-stat-val">89k</div><div class="r-stat-lbl">Population</div></div>
+          <div class="r-stat"><div class="r-stat-val">ORANGE</div><div class="r-stat-lbl">Code Danger</div></div>
+        </div>
+        <div class="survival-tips">
+          <div class="survival-title">🛡 Conseils de Survie</div>
+          <div class="survival-tip">Masque anti-cendres N50 requis</div>
+          <div class="survival-tip">Abris anti-chute de pierres obligatoires</div>
+        </div>
+      </div>
+
+      <div class="region-card" onclick="openRegionModal('japon')">
+        <div class="region-header">
+          <div class="region-icon">🏯</div>
+          <div class="region-title-g">
+            <div class="region-name-t">Ruines du Japon Volcanique</div>
+            <div class="region-type">ZONE ARCHÉOLOGIQUE DANGEREUSE</div>
+          </div>
+          <div class="stability-badge stab-warning">INSTABLE</div>
+        </div>
+        <div class="region-stats">
+          <div class="r-stat"><div class="r-stat-val">420°C</div><div class="r-stat-lbl">Température</div></div>
+          <div class="r-stat"><div class="r-stat-val">5.4/10</div><div class="r-stat-lbl">Activité</div></div>
+          <div class="r-stat"><div class="r-stat-val">45k</div><div class="r-stat-lbl">Population</div></div>
+          <div class="r-stat"><div class="r-stat-val">JAUNE</div><div class="r-stat-lbl">Code Danger</div></div>
+        </div>
+        <div class="survival-tips">
+          <div class="survival-title">🛡 Conseils de Survie</div>
+          <div class="survival-tip">Éviter les bâtiments effondrés</div>
+          <div class="survival-tip">Présence de cristaux énergétiques dangereux</div>
+        </div>
+      </div>
+
+      <div class="region-card" onclick="showToast('Fiche Sulfuria chargée')">
+        <div class="region-header">
+          <div class="region-icon">💨</div>
+          <div class="region-title-g">
+            <div class="region-name-t">Sulfuria</div>
+            <div class="region-type">PLAINE TOXIQUE</div>
+          </div>
+          <div class="stability-badge stab-warning">MODÉRÉ</div>
+        </div>
+        <div class="region-stats">
+          <div class="r-stat"><div class="r-stat-val">310°C</div><div class="r-stat-lbl">Température</div></div>
+          <div class="r-stat"><div class="r-stat-val">4.1/10</div><div class="r-stat-lbl">Activité</div></div>
+          <div class="r-stat"><div class="r-stat-val">203k</div><div class="r-stat-lbl">Population</div></div>
+          <div class="r-stat"><div class="r-stat-val">JAUNE</div><div class="r-stat-lbl">Code Danger</div></div>
+        </div>
+        <div class="survival-tips">
+          <div class="survival-title">🛡 Conseils de Survie</div>
+          <div class="survival-tip">Masque SO₂ niveau 3 minimum</div>
+          <div class="survival-tip">Vaccination anti-acide recommandée</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SURVEILLANCE -->
+    <div class="tab-panel" id="tab-surveillance">
+      <div class="section-title">Caméras en Direct</div>
+      <div class="cam-grid">
+        <div class="cam-feed" onclick="showToast('CAM-01 en plein écran')">
+          <div class="cam-noise" style="--cx:40%;--cy:70%;background:radial-gradient(ellipse at 40% 70%,rgba(255,60,0,0.25),rgba(100,20,0,0.15) 40%,rgba(5,1,0,0.85));"></div>
+          <div class="cam-scanline"></div>
+          <div class="cam-overlay">
+            <div class="cam-rec"><div class="cam-rec-dot"></div>LIVE</div>
+            <div class="cam-name">CAM-01 Craterium</div>
+            <div class="cam-temp-t">1847°C</div>
+          </div>
+        </div>
+        <div class="cam-feed" onclick="showToast('CAM-02 en plein écran')">
+          <div class="cam-noise" style="background:radial-gradient(ellipse at 60% 50%,rgba(200,80,0,0.2),rgba(80,15,0,0.1) 40%,rgba(5,1,0,0.85));"></div>
+          <div class="cam-scanline"></div>
+          <div class="cam-overlay">
+            <div class="cam-rec"><div class="cam-rec-dot"></div>LIVE</div>
+            <div class="cam-name">CAM-02 Monts Cendriers</div>
+            <div class="cam-temp-t">680°C</div>
+          </div>
+        </div>
+        <div class="cam-feed" onclick="showToast('CAM-03 en plein écran')">
+          <div class="cam-noise" style="background:radial-gradient(ellipse at 30% 60%,rgba(255,120,0,0.15),rgba(60,20,0,0.1) 40%,rgba(5,1,0,0.85));"></div>
+          <div class="cam-scanline"></div>
+          <div class="cam-overlay">
+            <div class="cam-rec"><div class="cam-rec-dot"></div>LIVE</div>
+            <div class="cam-name">CAM-03 Sulfuria</div>
+            <div class="cam-temp-t">310°C</div>
+          </div>
+        </div>
+        <div class="cam-feed" onclick="showToast('CAM-04 en plein écran')">
+          <div class="cam-noise" style="background:radial-gradient(ellipse at 70% 40%,rgba(150,50,0,0.18),rgba(40,10,0,0.1) 40%,rgba(5,1,0,0.9));"></div>
+          <div class="cam-scanline"></div>
+          <div class="cam-overlay">
+            <div class="cam-rec"><div class="cam-rec-dot"></div>LIVE</div>
+            <div class="cam-name">CAM-04 Ruines Japon</div>
+            <div class="cam-temp-t">420°C</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Activité Sismique en Temps Réel</div>
+      <div class="card">
+        <div class="card-title">📊 Sismographe Global</div>
+        <div class="seismic-graph">
+          <svg class="seismic-svg" id="seismic-svg"></svg>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div class="r-stat"><div class="r-stat-val" style="color:#ff4400;">9.2</div><div class="r-stat-lbl">Magnitude</div></div>
+          <div class="r-stat"><div class="r-stat-val">12 km</div><div class="r-stat-lbl">Profondeur</div></div>
+          <div class="r-stat"><div class="r-stat-val" style="color:var(--magma3);">47/h</div><div class="r-stat-lbl">Répliques</div></div>
+        </div>
+      </div>
+
+      <div class="section-title">Radar Thermique</div>
+      <div class="card">
+        <div class="card-title">🎯 Radar Volcanique</div>
+        <div class="radar-wrap">
+          <div class="radar-circle">
+            <div class="radar-ring" style="width:30%;height:30%;"></div>
+            <div class="radar-ring" style="width:60%;height:60%;"></div>
+            <div class="radar-ring" style="width:90%;height:90%;"></div>
+            <div class="radar-sweep"></div>
+            <div class="radar-blip" style="top:35%;left:45%;animation-delay:0.5s;"></div>
+            <div class="radar-blip" style="top:60%;left:25%;animation-delay:1.2s;"></div>
+            <div class="radar-blip" style="top:25%;left:70%;animation-delay:0.8s;"></div>
+            <div class="radar-blip" style="top:70%;left:65%;animation-delay:2s;background:#ffaa00;"></div>
+          </div>
+          <div style="flex:1;padding-left:16px;">
+            <div class="survival-tip" style="margin-bottom:8px;">● Craterium — 12 km</div>
+            <div class="survival-tip" style="margin-bottom:8px;">● M.Cendriers — 34 km</div>
+            <div class="survival-tip" style="margin-bottom:8px;color:#ffaa00;">● Ruines — 67 km</div>
+            <div class="survival-tip" style="margin-bottom:8px;color:#cc4400;">● Sulfuria — 89 km</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCYCLOPÉDIE -->
+    <div class="tab-panel" id="tab-encyclopedie">
+      <div class="section-title">Catégories</div>
+      <div class="ency-grid">
+        <div class="ency-card" onclick="switchEncySection('creatures')">
+          <span class="ency-icon">🦎</span>
+          <div class="ency-name">Créatures</div>
+          <div class="ency-count">47 espèces</div>
+        </div>
+        <div class="ency-card" onclick="switchEncySection('technologie')">
+          <span class="ency-icon">⚙️</span>
+          <div class="ency-name">Technologies</div>
+          <div class="ency-count">89 entrées</div>
+        </div>
+        <div class="ency-card" onclick="switchEncySection('mineraux')">
+          <span class="ency-icon">💎</span>
+          <div class="ency-name">Minéraux Rares</div>
+          <div class="ency-count">34 types</div>
+        </div>
+        <div class="ency-card" onclick="switchEncySection('histoire')">
+          <span class="ency-icon">📜</span>
+          <div class="ency-name">Histoire</div>
+          <div class="ency-count">12 ères</div>
+        </div>
+      </div>
+
+      <div class="section-title">Entrées Récentes</div>
+      <div class="ency-entry">
+        <div class="ency-entry-header">
+          <div class="ency-entry-icon">🦕</div>
+          <div>
+            <div class="ency-entry-title">Magmosaure Impérial</div>
+            <div class="ency-entry-class">CRÉATURE — CLASS. OMEGA</div>
+          </div>
+        </div>
+        <div class="ency-entry-desc">Reptile colossal de 40 mètres dont la peau est constituée de plaques de basalte fondu. Résiste à des températures supérieures à 2000°C. Considéré comme la créature la plus dangereuse de Volcain. Habitat: Craterium Central et zones adjacentes.</div>
+        <div class="ency-tags">
+          <span class="ency-tag">PRÉDATEUR</span><span class="ency-tag">VOLCANIQUE</span><span class="ency-tag">OMEGA</span><span class="ency-tag">RARE</span>
+        </div>
+      </div>
+
+      <div class="ency-entry">
+        <div class="ency-entry-header">
+          <div class="ency-entry-icon">💎</div>
+          <div>
+            <div class="ency-entry-title">Cristal de Pyrovite</div>
+            <div class="ency-entry-class">MINÉRAL — EXTRÊMEMENT RARE</div>
+          </div>
+        </div>
+        <div class="ency-entry-desc">Formation cristalline unique au monde de Volcain. Se génère dans les chambres magmatiques sous 3000 bars de pression. Source d'énergie principale des technologies thermiques avancées. Valeur: 8.4M crédits volcainiens par gramme.</div>
+        <div class="ency-tags">
+          <span class="ency-tag">ÉNERGIE</span><span class="ency-tag">RARE</span><span class="ency-tag">TECHNOLOGIE</span>
+        </div>
+      </div>
+
+      <div class="ency-entry">
+        <div class="ency-entry-header">
+          <div class="ency-entry-icon">⚙️</div>
+          <div>
+            <div class="ency-entry-title">Armure Thermique NX-9</div>
+            <div class="ency-entry-class">TECHNOLOGIE — SURVIE</div>
+          </div>
+        </div>
+        <div class="ency-entry-desc">Combinaison de survie construite avec des alliages de pyrovite et d'adamantium volcanique. Résiste à 1800°C pendant 4 heures. Dotée de capteurs sismiques intégrés et d'un système de refroidissement à circulation de liquide cryogénique.</div>
+        <div class="ency-tags">
+          <span class="ency-tag">PROTECTION</span><span class="ency-tag">ÉQUIPEMENT</span><span class="ency-tag">NX-9</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SURVIE -->
+    <div class="tab-panel" id="tab-survie">
+      <div class="card" style="background:linear-gradient(135deg,rgba(200,40,0,0.15),rgba(15,3,0,0.95));border-color:rgba(255,80,0,0.4);">
+        <div class="card-title" style="color:var(--magma);">⚠ PROTOCOLE D'URGENCE ACTIF</div>
+        <div style="font-size:0.78rem;color:var(--text2);line-height:1.6;">En cas d'éruption majeure: rejoindre immédiatement un abri de niveau 4+. Ne pas utiliser les routes de lave principale. Activer votre balise de détresse.</div>
+      </div>
+
+      <div class="section-title">Guides de Survie</div>
+
+      <div class="guide-card" id="guide-eruption">
+        <div class="guide-header" onclick="toggleGuide('eruption')">
+          <div class="guide-icon">🌋</div>
+          <div class="guide-title">Survivre à une Éruption Majeure</div>
+          <div class="guide-arrow">▶</div>
+        </div>
+        <div class="guide-content">
+          <div class="guide-step"><div class="step-num">1</div><div class="step-text">Évaluer la direction du vent pour anticiper les gaz toxiques et les cendres.</div></div>
+          <div class="guide-step"><div class="step-num">2</div><div class="step-text">Enfiler l'armure thermique et le masque filtrant niveau 5 minimum.</div></div>
+          <div class="guide-step"><div class="step-num">3</div><div class="step-text">Rejoindre l'abri anti-éruption le plus proche via la route verte.</div></div>
+          <div class="guide-step"><div class="step-num">4</div><div class="step-text">Activer le bouclier thermique portatif si vous êtes à moins de 5 km.</div></div>
+          <div class="guide-step"><div class="step-num">5</div><div class="step-text">Envoyer signal de détresse et attendre les équipes de la Garde Volcainienne.</div></div>
+        </div>
+      </div>
+
+      <div class="guide-card" id="guide-toxique">
+        <div class="guide-header" onclick="toggleGuide('toxique')">
+          <div class="guide-icon">☁️</div>
+          <div class="guide-title">Gestion des Nuages Toxiques</div>
+          <div class="guide-arrow">▶</div>
+        </div>
+        <div class="guide-content">
+          <div class="guide-step"><div class="step-num">1</div><div class="step-text">Identifier le type de gaz: SO₂, H₂S, CO ou vapeurs acides.</div></div>
+          <div class="guide-step"><div class="step-num">2</div><div class="step-text">Masque filtrant correspondant au type de gaz détecté.</div></div>
+          <div class="guide-step"><div class="step-num">3</div><div class="step-text">Se déplacer perpendiculairement au nuage, jamais à contre-courant.</div></div>
+          <div class="guide-step"><div class="step-num">4</div><div class="step-text">Prendre l'antidote anti-acide si exposition supérieure à 10 minutes.</div></div>
+        </div>
+      </div>
+
+      <div class="guide-card" id="guide-sismique">
+        <div class="guide-header" onclick="toggleGuide('sismique')">
+          <div class="guide-icon">⚡</div>
+          <div class="guide-title">Protocole Anti-Sismique</div>
+          <div class="guide-arrow">▶</div>
+        </div>
+        <div class="guide-content">
+          <div class="guide-step"><div class="step-num">1</div><div class="step-text">S'éloigner des bords de falaises et des couloirs de lave.</div></div>
+          <div class="guide-step"><div class="step-num">2</div><div class="step-text">Activer les stabilisateurs magnétiques de vos bottes de survie.</div></div>
+          <div class="guide-step"><div class="step-num">3</div><div class="step-text">Se placer en position basse dans une zone plane.</div></div>
+        </div>
+      </div>
+
+      <div class="section-title">Équipements Essentiels</div>
+      <div class="equip-grid">
+        <div class="equip-item">
+          <span class="equip-icon">🛡️</span>
+          <div class="equip-name">Armure NX-9</div>
+          <div class="equip-resist">Résistance: 1800°C</div>
+          <div class="resist-bar"><div class="resist-fill" style="width:90%;background:linear-gradient(90deg,#ff6600,#ff2200);"></div></div>
+        </div>
+        <div class="equip-item">
+          <span class="equip-icon">😷</span>
+          <div class="equip-name">Masque Anti-SO₂</div>
+          <div class="equip-resist">Filtre: 99.8%</div>
+          <div class="resist-bar"><div class="resist-fill" style="width:98%;background:linear-gradient(90deg,#ff8800,#ff6600);"></div></div>
+        </div>
+        <div class="equip-item">
+          <span class="equip-icon">📡</span>
+          <div class="equip-name">Détecteur Sismique</div>
+          <div class="equip-resist">Portée: 50 km</div>
+          <div class="resist-bar"><div class="resist-fill" style="width:80%;background:linear-gradient(90deg,#ffaa00,#ff8800);"></div></div>
+        </div>
+        <div class="equip-item">
+          <span class="equip-icon">💊</span>
+          <div class="equip-name">Antidote Volcainien</div>
+          <div class="equip-resist">Durée: 6 heures</div>
+          <div class="resist-bar"><div class="resist-fill" style="width:70%;background:linear-gradient(90deg,#ff6600,#ff8800);"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="tab-panel" id="tab-journal">
+      <div class="news-ticker-bar">
+        <span class="news-ticker-inner">🔴 EN DIRECT — Nouvelle fissure découverte secteur K-12 ◆ Le Conseil de Volcain déclare l'état d'urgence planétaire ◆ Dr. Ashan révèle l'existence d'une chambre magmatique inconnue ◆ Tempête de cendres prévue pour demain 06h00 ◆ Evacuation de Pyrolis en cours</span>
+      </div>
+
+      <div class="article-card" onclick="showToast('Article ouvert')">
+        <div class="article-img">
+          <div class="article-img-bg" style="--ax:30%;--ay:80%;--ac:rgba(255,40,0,0.5);"></div>
+          <div class="article-category">🚨 URGENCE</div>
+        </div>
+        <div class="article-body">
+          <div class="article-title">EXTINCTION IMMINENTE : Le Craterium Central entre en phase terminale</div>
+          <div class="article-excerpt">Les scientifiques de la Station Thermique Alpha ont détecté une augmentation de 847% de l'activité magmatique dans les dernières 48 heures. Un événement sans précédent dans l'histoire de Volcain.</div>
+          <div class="article-meta"><span>Dr. Lena Ashkar</span><span>Il y a 3 min</span></div>
+        </div>
+      </div>
+
+      <div class="article-card" onclick="showToast('Article ouvert')">
+        <div class="article-img">
+          <div class="article-img-bg" style="--ax:70%;--ay:60%;--ac:rgba(200,80,0,0.4);"></div>
+          <div class="article-category">🔬 SCIENCE</div>
+        </div>
+        <div class="article-body">
+          <div class="article-title">Découverte : Une nouvelle espèce de Cristal de Pyrovite détectée dans les Monts Cendriers</div>
+          <div class="article-excerpt">Des prospecteurs de la Guilde Minière ont identifié un cristal émettant des radiations inconnues. Valeur estimée à 40 milliards de crédits. La communauté scientifique est en ébullition.</div>
+          <div class="article-meta"><span>Institut Volcainien</span><span>Il y a 1h</span></div>
+        </div>
+      </div>
+
+      <div class="article-card" onclick="showToast('Article ouvert')">
+        <div class="article-img">
+          <div class="article-img-bg" style="--ax:50%;--ay:50%;--ac:rgba(150,60,0,0.35);"></div>
+          <div class="article-category">🏛 POLITIQUE</div>
+        </div>
+        <div class="article-body">
+          <div class="article-title">Le Grand Conseil ordonne l'évacuation totale de la zone rouge étendue</div>
+          <div class="article-excerpt">Face à l'escalade des événements volcaniques, le Haut Commandement de Volcain a signé le Décret d'Urgence Planétaire n°7. 2,4 millions de citoyens concernés par l'évacuation immédiate.</div>
+          <div class="article-meta"><span>Bulletin Officiel</span><span>Il y a 2h</span></div>
+        </div>
+      </div>
+
+      <div class="article-card" onclick="showToast('Article ouvert')">
+        <div class="article-img">
+          <div class="article-img-bg" style="--ax:40%;--ay:70%;--ac:rgba(180,50,0,0.3);"></div>
+          <div class="article-category">👤 INTERVIEW</div>
+        </div>
+        <div class="article-body">
+          <div class="article-title">"Volcain n'a jamais connu une telle activité" — Entretien exclusif avec la Chercheuse en Chef</div>
+          <div class="article-excerpt">Dr. Mira Volkov partage ses 30 ans de recherche et ses théories sur le Grand Réveil du Craterium. Une interview exclusive qui révèle les secrets les mieux gardés du monde de Volcain.</div>
+          <div class="article-meta"><span>Journaliste K. Shan</span><span>Il y a 4h</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOUTIQUE -->
+    <div class="tab-panel" id="tab-boutique">
+      <div class="shop-banner">
+        <div class="shop-banner-title">⚡ BOUTIQUE VOLCAINIENNE</div>
+        <div class="shop-promo">Équipements premium pour survivants d'élite</div>
+        <div class="promo-badge">🔥 SOLDES D'URGENCE -40%</div>
+      </div>
+
+      <div class="cart-bar">
+        <div class="cart-info">Mon Panier<span class="cart-count" id="cart-count">0</span></div>
+        <div class="cart-total" id="cart-total">0 VC</div>
+        <button onclick="showToast('Panier — 0 article')" style="background:rgba(255,60,0,0.2);border:1px solid rgba(255,60,0,0.3);border-radius:6px;color:var(--magma2);padding:6px 12px;font-family:Rajdhani,sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;">Voir →</button>
+      </div>
+
+      <div class="shop-grid">
+        <div class="shop-item" id="item-masque">
+          <div class="item-img" style="--ic:rgba(255,80,0,0.2);">
+            <div class="item-img-bg"></div>
+            😷
+            <div class="item-badge">-40%</div>
+            <button class="fav-btn" onclick="toggleFav(event,'item-masque')">♥</button>
+          </div>
+          <div class="item-body">
+            <div class="item-name">Masque Anti-Cendres Nx</div>
+            <div class="item-desc">Filtre SO₂ niveau 5+</div>
+            <div class="item-price-row">
+              <div><span class="item-price">840 VC</span><span class="item-old-price">1400</span></div>
+              <button class="add-btn" onclick="addToCart(event,840,'Masque Anti-Cendres')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="shop-item" id="item-armure">
+          <div class="item-img" style="--ic:rgba(255,60,0,0.25);">
+            <div class="item-img-bg"></div>
+            🛡️
+            <div class="item-badge">BEST</div>
+            <button class="fav-btn" onclick="toggleFav(event,'item-armure')">♥</button>
+          </div>
+          <div class="item-body">
+            <div class="item-name">Armure Thermique NX-9</div>
+            <div class="item-desc">Résistance 1800°C</div>
+            <div class="item-price-row">
+              <div><span class="item-price">4200 VC</span></div>
+              <button class="add-btn" onclick="addToCart(event,4200,'Armure NX-9')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="shop-item" id="item-detecteur">
+          <div class="item-img" style="--ic:rgba(200,80,0,0.2);">
+            <div class="item-img-bg"></div>
+            📡
+            <div class="item-badge">-25%</div>
+            <button class="fav-btn" onclick="toggleFav(event,'item-detecteur')">♥</button>
+          </div>
+          <div class="item-body">
+            <div class="item-name">Détecteur Sismique Pro</div>
+            <div class="item-desc">Portée 50 km, alerte 0.1s</div>
+            <div class="item-price-row">
+              <div><span class="item-price">1850 VC</span><span class="item-old-price">2470</span></div>
+              <button class="add-btn" onclick="addToCart(event,1850,'Détecteur Sismique')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="shop-item" id="item-cristal">
+          <div class="item-img" style="--ic:rgba(255,150,0,0.25);">
+            <div class="item-img-bg"></div>
+            💎
+            <div class="item-badge">RARE</div>
+            <button class="fav-btn" onclick="toggleFav(event,'item-cristal')">♥</button>
+          </div>
+          <div class="item-body">
+            <div class="item-name">Cristal Énergétique</div>
+            <div class="item-desc">Pyrovite brut +30 énergie</div>
+            <div class="item-price-row">
+              <div><span class="item-price">7800 VC</span></div>
+              <button class="add-btn" onclick="addToCart(event,7800,'Cristal Énergétique')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="shop-item" id="item-carte">
+          <div class="item-img" style="--ic:rgba(180,60,0,0.2);">
+            <div class="item-img-bg"></div>
+            🗺️
+            <div class="item-badge">PREMIUM</div>
+            <button class="fav-btn" onclick="toggleFav(event,'item-carte')">♥</button>
+          </div>
+          <div class="item-body">
+            <div class="item-name">Carte Volcain Premium</div>
+            <div class="item-desc">Zones secrètes débloquées</div>
+            <div class="item-price-row">
+              <div><span class="item-price">520 VC</span></div>
+              <button class="add-btn" onclick="addToCart(event,520,'Carte Premium')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="shop-item" id="item-collector">
+          <div class="item-img" style="--ic:rgba(255,100,0,0.3);">
+            <div class="item-img-bg"></div>
+            🏆
+            <div class="item-badge">COLLECTOR</div>
+            <button class="fav-btn" onclick="toggleFav(event,'item-collector')">♥</button>
+          </div>
+          <div class="item-body">
+            <div class="item-name">Édition Collector Volcain</div>
+            <div class="item-desc">Figurine Magmosaure + Artbook</div>
+            <div class="item-price-row">
+              <div><span class="item-price">12400 VC</span></div>
+              <button class="add-btn" onclick="addToCart(event,12400,'Édition Collector')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARAMÈTRES -->
+    <div class="tab-panel" id="tab-parametres">
+      <div class="setting-group">
+        <div class="setting-group-title">Thème Visuel</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Thème de Couleur</div><div class="setting-sub">Choisir une palette</div></div>
+          <div class="theme-swatches">
+            <div class="swatch active" style="background:radial-gradient(circle,#ff4400,#cc0000);" onclick="setTheme(this,'magma')" title="Magma"></div>
+            <div class="swatch" style="background:radial-gradient(circle,#cc00ff,#660099);" onclick="setTheme(this,'violet')" title="Violet"></div>
+            <div class="swatch" style="background:radial-gradient(circle,#00aaff,#004477);" onclick="setTheme(this,'bleu')" title="Glacial"></div>
+            <div class="swatch" style="background:radial-gradient(circle,#00ff88,#004422);" onclick="setTheme(this,'vert')" title="Toxique"></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Particules & Effets</div><div class="setting-sub">Braises, fumées, éclairs</div></div>
+          <div class="toggle on" id="t-particles" onclick="toggleSetting(this,'particles')"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Animations</div><div class="setting-sub">Lava flows, animations UI</div></div>
+          <div class="toggle on" id="t-anim" onclick="toggleSetting(this,'anim')"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Notifications</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Alertes Critiques</div><div class="setting-sub">Niveau 3 et 4</div></div>
+          <div class="toggle on" id="t-alertes" onclick="toggleSetting(this,'alertes')"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Vibrations</div><div class="setting-sub">Séismes détectés</div></div>
+          <div class="toggle on" id="t-vibration" onclick="toggleSetting(this,'vibration')"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Sons d'Alerte</div><div class="setting-sub">Sirènes volcainiennes</div></div>
+          <div class="toggle" id="t-sons" onclick="toggleSetting(this,'sons')"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Journal en Continu</div><div class="setting-sub">Nouvelles automatiques</div></div>
+          <div class="toggle on" id="t-journal" onclick="toggleSetting(this,'journal')"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Système</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Langue</div></div>
+          <select class="setting-select">
+            <option>Français</option>
+            <option>English</option>
+            <option>Volcainien</option>
+            <option>Español</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Unité de Température</div></div>
+          <select class="setting-select">
+            <option>Celsius (°C)</option>
+            <option>Fahrenheit (°F)</option>
+            <option>Kelvin (K)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Mode Hors Ligne</div><div class="setting-sub">Cache PWA actif</div></div>
+          <div class="toggle on" id="t-offline" onclick="toggleSetting(this,'offline')"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">À Propos</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Néresia</div><div class="setting-sub">Version 4.2.1 — Monde de Volcain</div></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text3);">PWA</div>
+        </div>
+        <div class="setting-row" onclick="showToast('Cache PWA mis à jour')">
+          <div><div class="setting-label">Mettre à Jour les Données</div><div class="setting-sub">Dernière sync: il y a 3 min</div></div>
+          <div style="color:var(--magma2);font-size:0.8rem;">↻</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- NAV -->
+  <div id="nav">
+    <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Accueil</div>
+    </button>
+    <button class="nav-btn" id="nav-carte" onclick="switchTab('carte')">
+      <div class="nav-icon">🗺️</div>
+      <div class="nav-label">Carte</div>
+    </button>
+    <button class="nav-btn" id="nav-alertes" onclick="switchTab('alertes')">
+      <div class="nav-icon">⚠️</div>
+      <div class="nav-label">Alertes</div>
+    </button>
+    <button class="nav-btn" id="nav-regions" onclick="switchTab('regions')">
+      <div class="nav-icon">🌋</div>
+      <div class="nav-label">Régions</div>
+    </button>
+    <button class="nav-btn" id="nav-surveillance" onclick="switchTab('surveillance')">
+      <div class="nav-icon">📡</div>
+      <div class="nav-label">Surveil.</div>
+    </button>
+    <button class="nav-btn" id="nav-encyclopedie" onclick="switchTab('encyclopedie')">
+      <div class="nav-icon">📚</div>
+      <div class="nav-label">Encyclo.</div>
+    </button>
+    <button class="nav-btn" id="nav-survie" onclick="switchTab('survie')">
+      <div class="nav-icon">🛡️</div>
+      <div class="nav-label">Survie</div>
+    </button>
+    <button class="nav-btn" id="nav-journal" onclick="switchTab('journal')">
+      <div class="nav-icon">📰</div>
+      <div class="nav-label">Journal</div>
+    </button>
+    <button class="nav-btn" id="nav-boutique" onclick="switchTab('boutique')">
+      <div class="nav-icon">🛒</div>
+      <div class="nav-label">Boutique</div>
+    </button>
+    <button class="nav-btn" id="nav-parametres" onclick="switchTab('parametres')">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label">Params</div>
+    </button>
+  </div>
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div id="modal" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="position:relative;">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ====== SPLASH ======
+const splashMessages = [
+  'Initialisation des capteurs thermiques...',
+  'Connexion au réseau volcainien...',
+  'Chargement des données sismiques...',
+  'Calibration des caméras de surveillance...',
+  'Synchronisation des alertes actives...',
+  'Néresia prêt — Bonne survie.'
+];
+let msgIdx = 0;
+const statusEl = document.getElementById('splash-status');
+const msgInterval = setInterval(() => {
+  msgIdx++;
+  if (msgIdx < splashMessages.length) {
+    statusEl.textContent = splashMessages[msgIdx];
+  } else {
+    clearInterval(msgInterval);
+  }
+}, 420);
+
+setTimeout(() => {
+  document.getElementById('splash').classList.add('hide');
+  document.getElementById('app').classList.add('visible');
+  initParticles();
+  initSeismicGraph();
+}, 2800);
+
+// ====== PARTICLES ======
+function initParticles() {
+  const container = document.getElementById('particles');
+  // Embers
+  for (let i = 0; i < 20; i++) {
+    const e = document.createElement('div');
+    e.className = 'ember-p';
+    const size = Math.random() * 4 + 2;
+    e.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:0;
+      --dx:${(Math.random()-0.5)*200}px;
+      animation-duration:${Math.random()*8+5}s;
+      animation-delay:${Math.random()*8}s;
+    `;
+    container.appendChild(e);
+  }
+  // Smoke
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('div');
+    s.className = 'smoke-p';
+    const size = Math.random() * 80 + 40;
+    s.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${Math.random()*15+10}s;
+      animation-delay:${Math.random()*10}s;
+    `;
+    container.appendChild(s);
+  }
+  // Lightning
+  for (let i = 0; i < 3; i++) {
+    const l = document.createElement('div');
+    l.className = 'lightning-p';
+    const height = Math.random() * 100 + 50;
+    l.style.cssText = `
+      height:${height}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*30}%;
+      animation-duration:${Math.random()*5+3}s;
+      animation-delay:${Math.random()*5}s;
+    `;
+    container.appendChild(l);
+  }
+}
+
+// ====== SEISMIC GRAPH ======
+function initSeismicGraph() {
+  const svg = document.getElementById('seismic-svg');
+  if (!svg) return;
+  const w = svg.parentElement.offsetWidth || 300;
+  const h = 80;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  drawSeismic(svg, w, h);
+  setInterval(() => drawSeismic(svg, w, h), 1500);
+}
+
+function drawSeismic(svg, w, h) {
+  const pts = [];
+  const cx = w / 80;
+  for (let i = 0; i <= 80; i++) {
+    const x = i * cx;
+    const base = h/2;
+    let y = base;
+    if (i > 20 && i < 60) {
+      y = base + (Math.random()-0.5) * 50 * Math.sin((i-20)/40 * Math.PI);
+    } else {
+      y = base + (Math.random()-0.5) * 8;
+    }
+    pts.push(`${i===0?'M':'L'}${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  svg.innerHTML = `
+    <line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="rgba(255,60,0,0.1)" stroke-width="1"/>
+    <path d="${pts.join(' ')}" fill="none" stroke="var(--magma2)" stroke-width="1.5" opacity="0.9"/>
+    <path d="${pts.join(' ')} L${w},${h} L0,${h} Z" fill="rgba(255,100,0,0.05)"/>
+    <text x="4" y="12" font-family="'Share Tech Mono',monospace" font-size="8" fill="rgba(255,100,0,0.5)">SISMO LIVE</text>
+  `;
+}
+
+// ====== TAB NAVIGATION ======
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  if (tab === 'surveillance') {
+    setTimeout(() => initSeismicGraph(), 100);
+  }
+}
+
+// ====== MAP MODES ======
+function setMode(el, mode) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Mode ' + mode + ' activé');
+}
+
+// ====== ALERT FILTERS ======
+function filterAlerts(el, type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Filtre: ' + type);
+}
+
+// ====== GUIDE TOGGLE ======
+function toggleGuide(id) {
+  const card = document.getElementById('guide-' + id);
+  card.classList.toggle('open');
+}
+
+// ====== ENCY SECTION ======
+function switchEncySection(section) {
+  showToast('Section ' + section + ' chargée');
+}
+
+// ====== REGION MODAL ======
+const regionData = {
+  craterium: {
+    name:'Craterium Central', icon:'🌋', type:'Zone Volcanique Primaire',
+    desc:'Le cœur battant du monde de Volcain. Cette région est le point de convergence de 14 chambres magmatiques actives. La température au sol dépasse régulièrement 1800°C. Seuls les équipements de classe Omega permettent d\'y séjourner plus de quelques heures.',
+    pop:'124,000', temp:'1847°C', sismo:'9.2', danger:'EXTINCTION',
+    tips:['Armure thermique NX-9 obligatoire','Oxygen synthétique requis (atmosphère irrespirable)','Balise de détresse activée en permanence','Jamais seul — groupe de 4 minimum','Durée max: 3 heures consécutives']
+  },
+  monts: {
+    name:'Monts Cendriers', icon:'⛰️', type:'Chaîne Montagneuse Volcanique',
+    desc:'Formée lors du Grand Réveil de l\'Ère Ignis, cette chaîne de 40 volcans actifs s\'étend sur 800 km. Les tempêtes de cendres y sont quotidiennes et les avalanches de pierres pyroclastiques extrêmement fréquentes.',
+    pop:'89,000', temp:'680°C', sismo:'7.8', danger:'CRITIQUE',
+    tips:['Masque anti-cendres N50 obligatoire','Casque anti-impact renforcé requis','Surveiller le bulletin météo toutes les 30 min','Éviter les cols entre 10h et 16h']
+  },
+  japon: {
+    name:'Ruines Japon Volcanique', icon:'🏯', type:'Zone Archéologique & Dangereuse',
+    desc:'Vestiges de l\'ancienne civilisation nippo-volcainienne engloutie lors de la Grande Purge de Magma. Ces ruines recèlent des technologies perdues et des cristaux de pyrovite d\'une valeur inestimable, mais les bâtiments s\'effondrent et des radiations cristallines y persistent.',
+    pop:'45,000', temp:'420°C', sismo:'5.4', danger:'ÉLEVÉ',
+    tips:['Dosimètre de radiation obligatoire','Ne pas toucher les cristaux sans gants isolants','Éviter les structures en surplomb','Scanner sonique avant d\'entrer dans tout bâtiment']
+  },
+  sulfuria: {
+    name:'Sulfuria', icon:'💨', type:'Plaine Toxique',
+    desc:'Vaste plaine recouverte de geysers de soufre et de lacs d\'acide sulfurique. Malgré l\'hostilité de l\'environnement, Sulfuria est la région la plus peuplée de Volcain grâce à l\'exploitation des minerais thermiques.',
+    pop:'203,000', temp:'310°C', sismo:'4.1', danger:'MODÉRÉ',
+    tips:['Masque SO₂ niveau 3 minimum','Vaccination anti-acide recommandée','Eviter les zones de geyser actif','Tenue imperméable aux acides']
+  },
+  glacis: {
+    name:'Glacis Fumants', icon:'🌫️', type:'Zone de Vapeurs Géothermiques',
+    desc:'Région mystérieuse où la vapeur géothermique crée un brouillard permanent. La visibilité y est quasi nulle et des créatures inconnues ont été signalées dans les zones les plus profondes.',
+    pop:'12,000', temp:'280°C', sismo:'3.2', danger:'MODÉRÉ',
+    tips:['GPS thermique obligatoire (visibilité <5m)','Cordes de sécurité en groupe','Méfiance envers les zones de silence']
+  }
+};
+
+function openRegionModal(id) {
+  const r = regionData[id];
+  if (!r) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">${r.icon} ${r.name}</div>
+    <div class="modal-sub">${r.type}</div>
+    <div style="font-size:0.78rem;color:var(--text2);line-height:1.7;margin-bottom:14px;">${r.desc}</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;">
+      <div class="r-stat"><div class="r-stat-val">${r.temp}</div><div class="r-stat-lbl">Température</div></div>
+      <div class="r-stat"><div class="r-stat-val">${r.sismo}/10</div><div class="r-stat-lbl">Activité</div></div>
+      <div class="r-stat"><div class="r-stat-val">${r.pop}</div><div class="r-stat-lbl">Population</div></div>
+      <div class="r-stat"><div class="r-stat-val" style="color:var(--magma);font-size:0.7rem;">${r.danger}</div><div class="r-stat-lbl">Niveau</div></div>
+    </div>
+    <div class="survival-tips">
+      <div class="survival-title">🛡 Conseils de Survie</div>
+      ${r.tips.map(t=>`<div class="survival-tip">${t}</div>`).join('')}
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+function closeModalDirect() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+// ====== CART ======
+let cartCount = 0;
+let cartTotal = 0;
+function addToCart(e, price, name) {
+  e.stopPropagation();
+  cartCount++;
+  cartTotal += price;
+  document.getElementById('cart-count').textContent = cartCount;
+  document.getElementById('cart-total').textContent = cartTotal.toLocaleString() + ' VC';
+  showToast('✓ ' + name + ' ajouté au panier');
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function toggleFav(e, id) {
+  e.stopPropagation();
+  const item = document.getElementById(id);
+  item.classList.toggle('fav');
+  const btn = e.currentTarget;
+  btn.style.color = item.classList.contains('fav') ? 'var(--magma2)' : 'var(--text3)';
+  showToast(item.classList.contains('fav') ? '♥ Ajouté aux favoris' : '♡ Retiré des favoris');
+}
+
+// ====== TOGGLES ======
+function toggleSetting(el, key) {
+  el.classList.toggle('on');
+  const isOn = el.classList.contains('on');
+  if (key === 'particles') {
+    document.getElementById('particles').style.display = isOn ? 'block' : 'none';
+  }
+  showToast(key + (isOn ? ' activé' : ' désactivé'));
+}
+
+function setTheme(el, theme) {
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const themes = {
+    magma: { magma:'#ff2200', magma2:'#ff6600', magma3:'#ffaa00' },
+    violet: { magma:'#cc00ff', magma2:'#dd44ff', magma3:'#ee88ff' },
+    bleu: { magma:'#0088ff', magma2:'#44aaff', magma3:'#88ccff' },
+    vert: { magma:'#00cc44', magma2:'#00ff88', magma3:'#88ffcc' }
+  };
+  const t = themes[theme] || themes.magma;
+  document.documentElement.style.setProperty('--magma', t.magma);
+  document.documentElement.style.setProperty('--magma2', t.magma2);
+  document.documentElement.style.setProperty('--magma3', t.magma3);
+  document.documentElement.style.setProperty('--ember', t.magma);
+  showToast('Thème ' + theme + ' appliqué');
+}
+
+// ====== TOAST ======
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ====== OFFLINE DETECTION ======
+window.addEventListener('offline', () => {
+  document.getElementById('offline-banner').style.display = 'block';
+});
+window.addEventListener('online', () => {
+  document.getElementById('offline-banner').style.display = 'none';
+});
+
+// ====== PWA SERVICE WORKER ======
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('#').catch(() => {});
+  });
+}
+
+// ====== LIVE DATA SIMULATION ======
+function updateLiveData() {
+  const temps = [840, 845, 850, 847, 852, 843, 858, 847];
+  const t = temps[Math.floor(Math.random() * temps.length)];
+  const el = document.querySelector('.header-temp');
+  if (el) el.textContent = t + '°C';
+}
+setInterval(updateLiveData, 5000);
+
+// ====== TOUCH FEEDBACK ======
+document.addEventListener('touchstart', function(e) {
+  const target = e.target.closest('.region-card, .article-card, .shop-item, .guide-header');
+  if (target) target.style.opacity = '0.85';
+}, { passive: true });
+document.addEventListener('touchend', function(e) {
+  const target = e.target.closest('.region-card, .article-card, .shop-item, .guide-header');
+  if (target) setTimeout(() => target.style.opacity = '1', 200);
+}, { passive: true });
+</script>
+</body>
+</html>
